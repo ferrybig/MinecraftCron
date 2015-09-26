@@ -1,0 +1,6 @@
+main: me.ferrybig.minecraftcron.Main
+name: MinecraftCron
+description: <
+    this is a plugin that executes tasks on certain times and uses a  java based cron to do so
+    
+version: ${project.version}
