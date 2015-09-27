@@ -67,6 +67,8 @@ public class Main extends JavaPlugin {
 					p.println("# * * * * *: say minutes ticking... ");
 					p.println("# message every minute ");
 					p.println("# ");
+					p.println("# Warning: command should be placed without the / in front of it");
+					p.println("# ");
 					p.println("# ");
 				}
 			} catch (IOException ex) {
