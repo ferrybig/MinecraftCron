@@ -28,8 +28,8 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public class Main extends JavaPlugin {
 
-	Scheduler schedular;
-	Map<String, List<String>> commands = new HashMap<>();
+	private Scheduler schedular;
+	private final Map<String, List<String>> commands = new HashMap<>();
 
 	@Override
 	public void onEnable() {
