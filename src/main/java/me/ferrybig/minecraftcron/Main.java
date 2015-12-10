@@ -69,8 +69,7 @@ public class Main extends JavaPlugin {
 					p.println("# ");
 				}
 			} catch (IOException ex) {
-
-				this.getLogger().log(Level.SEVERE, null, ex);
+				this.getLogger().log(Level.SEVERE, "Problem loading tasks", ex);
 			}
 			this.getLogger().log(Level.INFO, "Succesfully created datafolder, now its time to configure the plugin!");
 			this.setEnabled(false);
