@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -30,54 +32,35 @@ public class Main extends JavaPlugin {
 
 	private Scheduler schedular;
 	private final Map<String, List<String>> commands = new HashMap<>();
+	
 
 	@Override
 	public void onEnable() {
 		super.onEnable();
-		File config = new File(this.getDataFolder(), "tasks.txt");
+		config = new File(this.getDataFolder(), "tasks.txt");
 		if (!this.getDataFolder().exists()) {
 			this.getDataFolder().mkdir();
 		}
 		if (!config.exists()) {
-			try {
-				try (PrintStream p = new PrintStream(new FileOutputStream(config), false, "UTF-8")) {
-					p.println("# Crontab syntax :");
-					p.println("# A crontab file has five fields for specifying day , date and time followed by the command to be run at that interval.");
-					p.println("# *     *     *   *    * :     command to be executed");
-					p.println("# -     -     -   -    -");
-					p.println("# |     |     |   |    |");
-					p.println("# |     |     |   |    +----- day of week (0 - 6) (Sunday=0)");
-					p.println("# |     |     |   +------- month (1 - 12)");
-					p.println("# |     |     +--------- day of        month (1 - 31)");
-					p.println("# |     +----------- hour (0 - 23)");
-					p.println("# +------------- min (0 - 59)");
-					p.println("# * in the value field above means all legal values as in braces for that column.");
-					p.println("# The value column can have a * or a list of elements separated by commas. An element is either a number in the ranges shown above or two numbers in the range separated by a hyphen (meaning an inclusive range).");
-					p.println("# ");
-					p.println("# Examples: ");
-					p.println("# 0 7 * * *: say hi");
-					p.println("# Says hi a 7 o clock ");
-					p.println("# ");
-					p.println("# 0 * * * *: backup ");
-					p.println("# Hourly backup ");
-					p.println("# ");
-					p.println("# * * * * *: say minutes ticking... ");
-					p.println("# message every minute ");
-					p.println("# ");
-					p.println("# Warning: command should be placed without the / in front of it");
-					p.println("# ");
-					p.println("# ");
-				}
-			} catch (IOException ex) {
-				this.getLogger().log(Level.SEVERE, "Problem loading tasks", ex);
-			}
-			this.getLogger().log(Level.INFO, "Succesfully created datafolder, now its time to configure the plugin!");
+			saveResource(config.getName(), false);
+			this.getLogger().log(Level.INFO, "Succesfully created datafolder, now it is time to configure the plugin!");
 			this.setEnabled(false);
 			return;
 		}
 
-		schedular = new Scheduler();
+		if(!load(config)) {
+			this.setEnabled(false);
+			this.getLogger().log(Level.WARNING, "No tasks found, plz follow the instructions inside the config file how to add a tasks");
+		}
+	}
+	private File config;
 
+	private boolean load(File config) throws IllegalStateException {
+		if(this.schedular != null) {
+			this.schedular.stop();
+			this.schedular = null;
+		}
+		schedular = new Scheduler();
 		try {
 			try (BufferedReader p = new BufferedReader(new InputStreamReader(new FileInputStream(config), "UTF-8"))) {
 				String line;
@@ -106,13 +89,12 @@ public class Main extends JavaPlugin {
 		} catch (IOException ex) {
 			this.getLogger().log(Level.SEVERE, null, ex);
 		}
-		if(commands.isEmpty()) {
-			this.getLogger().log(Level.WARNING, "No tasks found, plz follow the instructions inside the config file how to add a tasks");
+		if (commands.isEmpty()) {
 			schedular = null;
-			this.setEnabled(false);
-			return;
+			return true;
 		}
 		schedular.start();
+		return false;
 	}
 
 	@Override
@@ -121,6 +103,29 @@ public class Main extends JavaPlugin {
 		if(schedular != null)
 			schedular.stop();
 	}
+
+	@Override
+	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+		if(command.getName().equals("minecraftcronreload")) {
+			if(!command.testPermission(sender)) {
+				return true;
+			}
+			if(this.load(config)) {
+				int commands = 0;
+				for(List<?> c : this.commands.values()) {
+					commands += c.size();
+				}
+				sender.sendMessage("Tasks loaded with " + commands + " tasks");
+			} else {
+				sender.sendMessage("No tasks found!");
+			}
+			return true;
+		} else {
+			throw new IllegalArgumentException("Command " + command.getName() + " incorrectly implemented for this plugin");
+		}
+	}
+	
+	
 
 	private class TaskRunner implements Runnable {
 
