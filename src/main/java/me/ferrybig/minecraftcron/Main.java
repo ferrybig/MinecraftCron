@@ -30,7 +30,6 @@ public class Main extends JavaPlugin {
 
 	private Scheduler schedular;
 	private final Map<String, List<String>> commands = new HashMap<>();
-	
 
 	@Override
 	public void onEnable() {
@@ -46,7 +45,7 @@ public class Main extends JavaPlugin {
 			return;
 		}
 
-		if(!load(config)) {
+		if (!load(config)) {
 			this.setEnabled(false);
 			this.getLogger().log(Level.WARNING, "No tasks found, plz follow the instructions inside the config file how to add a tasks");
 		}
@@ -54,7 +53,7 @@ public class Main extends JavaPlugin {
 	private File config;
 
 	private boolean load(File config) throws IllegalStateException {
-		if(this.schedular != null) {
+		if (this.schedular != null) {
 			this.schedular.stop();
 			this.schedular = null;
 		}
@@ -98,19 +97,20 @@ public class Main extends JavaPlugin {
 	@Override
 	public void onDisable() {
 		super.onDisable();
-		if(schedular != null)
+		if (schedular != null) {
 			schedular.stop();
+		}
 	}
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-		if(command.getName().equals("minecraftcronreload")) {
-			if(!command.testPermission(sender)) {
+		if (command.getName().equals("minecraftcronreload")) {
+			if (!command.testPermission(sender)) {
 				return true;
 			}
-			if(this.load(config)) {
+			if (this.load(config)) {
 				int commands = 0;
-				for(List<?> c : this.commands.values()) {
+				for (List<?> c : this.commands.values()) {
 					commands += c.size();
 				}
 				sender.sendMessage("Tasks loaded with " + commands + " tasks");
@@ -122,8 +122,6 @@ public class Main extends JavaPlugin {
 			throw new IllegalArgumentException("Command " + command.getName() + " incorrectly implemented for this plugin");
 		}
 	}
-	
-	
 
 	private class TaskRunner implements Runnable {
 
